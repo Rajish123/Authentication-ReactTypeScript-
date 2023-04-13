@@ -1,9 +1,12 @@
-import React from 'react'
+import React, {useState} from 'react'
 import {useForm, SubmitHandler,Controller} from 'react-hook-form';
 import {yupResolver} from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { TextField } from '@mui/material';
-import { resolve } from 'path';
+import { useAppDispatch } from '../store/store';
+import { login } from '../store/features/authSlice';
+import { redirect } from "react-router-dom";
+import { useNavigate  } from "react-router-dom";
 
 //  specifies the types for the form input fields, email and password.
 interface IFormInput{
@@ -18,6 +21,12 @@ const schema = yup.object().shape({
 })
 
 const RegisterForm:React.FC = () => {
+    const dispatch = useAppDispatch();
+    const navigate = useNavigate();
+
+    const [errorMessage, setErrorMessage] = useState('');
+
+
     // grab methods from useForm
     const {
         // references the input that you are trying to access as variable, register must have key
@@ -40,8 +49,16 @@ const RegisterForm:React.FC = () => {
     const formSubmitHandler : SubmitHandler<IFormInput> = async(data:IFormInput)=>{
         console.log(data);
         const {email,password} = data;
-        const isAuthenticated = await login(email,password);
+        const isAuthenticated = await logincredentials(email,password);
         console.log('isAuthenticated', isAuthenticated);
+        console.log(dispatch(login));
+        if (isAuthenticated) {
+            dispatch(login({ email, password }));
+            navigate('/profile');
+        }else{
+            setErrorMessage('Invalid login credentials');
+        }
+
     };
 
   return (
@@ -83,19 +100,21 @@ const RegisterForm:React.FC = () => {
             {/* {errors.password && errors.password?.message && <span>{errors.password.message}</span>}<br/>  */}
             <input type='submit' />
         </form>
+        {errorMessage && <p>{errorMessage}</p>}
     </div>
   );
 };
 
 // TypeScript arrow function named Login that takes in two parameters: email and password, both of type string. The function returns a Promise that resolves to a boolean value.
-const login = async(email:string, password:string): Promise<boolean> => {
+const logincredentials = async(email:string, password:string): Promise<boolean> => {
     await new Promise(resolve => setTimeout(resolve,1000));
 
     if (email === "abc@gmail.com" && password === "password"){
         return true;
     }
-
-    return false;
+    else{
+        return false;
+    }
 }
 
 export default RegisterForm
