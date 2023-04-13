@@ -22,7 +22,7 @@ function App() {
   // const {register,handleSubmit} = useForm<IFormInput>();
   // const onSubmit: SubmitHandler<IFormInput> = data => console.log(data);
   const isAuthUser = useAppSelector(state=>state.auth.isAuthenticated)
-  const email = useAppSelector(state=>state.auth.email)
+  const email = useAppSelector(state=>state.auth.username)
   const password = useAppSelector(state=>state.auth.password)
 
   console.log("userState is ",isAuthUser);

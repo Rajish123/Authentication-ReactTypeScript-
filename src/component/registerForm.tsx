@@ -7,16 +7,17 @@ import { useAppDispatch } from '../store/store';
 import { login } from '../store/features/authSlice';
 import { redirect } from "react-router-dom";
 import { useNavigate  } from "react-router-dom";
+import axios from 'axios';
 
 //  specifies the types for the form input fields, email and password.
 interface IFormInput{
-    email:string;
+    username:string;
     password:string;
 }
 
 // define the rules for validation
 const schema = yup.object().shape({
-    email:yup.string().email().required(),
+    username:yup.string().required(),
     password:yup.string().min(4).max(10).required(),
 })
 
@@ -48,12 +49,12 @@ const RegisterForm:React.FC = () => {
 
     const formSubmitHandler : SubmitHandler<IFormInput> = async(data:IFormInput)=>{
         console.log(data);
-        const {email,password} = data;
-        const isAuthenticated = await logincredentials(email,password);
+        const {username,password} = data;
+        const isAuthenticated = await logincredentials(username,password);
         console.log('isAuthenticated', isAuthenticated);
         console.log(dispatch(login));
         if (isAuthenticated) {
-            dispatch(login({ email, password }));
+            dispatch(login({ username, password }));
             navigate('/profile');
         }else{
             setErrorMessage('Invalid login credentials');
@@ -66,17 +67,15 @@ const RegisterForm:React.FC = () => {
         {/* pass the form data into handleSubmit  */}
         <form onSubmit={handleSubmit(formSubmitHandler)}>
             <Controller 
-                name = 'email'
+                name = 'username'
                 control={control}
-                defaultValue='abc@email.com'
                 render = {({field})=>(
                     // here ...field takes all value i.e, name,control,default and passing to textField
                     <TextField 
                         {...field}
-                        label = "Email Address"
-                        type='email'
-                        error = {!!errors.email}
-                        helperText = {errors.email ? errors.email?.message:''}
+                        label = "Username"
+                        error = {!!errors.username}
+                        helperText = {errors.username ? errors.username?.message:''}
 
                     />
                 )}
@@ -106,15 +105,32 @@ const RegisterForm:React.FC = () => {
 };
 
 // TypeScript arrow function named Login that takes in two parameters: email and password, both of type string. The function returns a Promise that resolves to a boolean value.
-const logincredentials = async(email:string, password:string): Promise<boolean> => {
-    await new Promise(resolve => setTimeout(resolve,1000));
+const logincredentials = async(username:string, password:string): Promise<boolean> => {
+    try{
+        const response = await axios.post("https://dummyjson.com/auth/login",{
+            username:username,
+            password:password
+        });
+        console.log("data",response.data);
+        if (response.data.token){
+            return true;
+        }else{
+            return false;
+        }
+    }catch(error){
+        console.log(error);
+        return false
+    }
+};
+    
+    
+    // await new Promise(resolve => setTimeout(resolve,1000));
 
-    if (email === "abc@gmail.com" && password === "password"){
-        return true;
-    }
-    else{
-        return false;
-    }
-}
+    // if (email === "abc@gmail.com" && password === "password"){
+    //     return true;
+    // }
+    // else{
+    //     return false;
+    // }
 
 export default RegisterForm
